@@ -1,72 +1,72 @@
 package config
 
 import (
-  "encoding/json"
+	"encoding/json"
 	"os"
 	"path/filepath"
 )
 
-
 const configFileName = ".gatorconfig.json"
 
 type Config struct {
-	DbUrl string `json:"db_url"`
+	DBURL           string `json:"db_url"`
 	CurrentUserName string `json:"current_user_name"`
-}	
+}
 
-func (cfg *Config) SetUser(username string) error {
-	cfg.CurrentUserName = username
+func (cfg *Config) SetUser(userName string) error {
+	cfg.CurrentUserName = userName
 	return write(*cfg)
 }
 
 func Read() (Config, error) {
-	configPath, err := getConfigFilePath() 
+	fullPath, err := getConfigFilePath()
 	if err != nil {
-	  return Config{}, err 
+		return Config{}, err
 	}
-	
-	data, err := os.Open(configPath)
-	if err != nil { 
-			return Config{}, err 
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		return Config{}, err
 	}
-	defer data.Close()
-  
-	decoder := json.NewDecoder(data)
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
 	cfg := Config{}
 	err = decoder.Decode(&cfg)
 	if err != nil {
-		return Config{}, err 
+		return Config{}, err
 	}
 
 	return cfg, nil
 }
 
-
-func getConfigFilePath() (string, error){
-  homeDir, err := os.UserHomeDir()
-  if err != nil {
-   return "", err 
-  }
-  return filepath.Join(homeDir, configFileName), nil
+func getConfigFilePath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	fullPath := filepath.Join(home, configFileName)
+	return fullPath, nil
 }
 
-func write(cfg Config) error{
-	configPath, err := getConfigFilePath() 
+func write(cfg Config) error {
+	fullPath, err := getConfigFilePath()
 	if err != nil {
-	  return err 
+		return err
 	}
 
-	data, err := os.Create(configPath)
-  if err != nil {
-		return err 
-  }
-	defer data.Close()
+	file, err := os.Create(fullPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-  encoder :=json.NewEncoder(data)	
+	encoder := json.NewEncoder(file)
 	err = encoder.Encode(cfg)
-  if err != nil {
-		return err 
-  }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
+
