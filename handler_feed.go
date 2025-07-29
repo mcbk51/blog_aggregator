@@ -9,6 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
+func handlerListFeeds(s *state, cmd command) error {
+	
+}
+
 func handlerAddFeed(s *state, cmd command) error {
 	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
@@ -26,7 +30,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    currentUser.ID, // Fixed: was using undefined 'user', now uses 'currentUser'
+		UserID:    currentUser.ID, 
 		Name:      name,
 		Url:       url,
 	})
