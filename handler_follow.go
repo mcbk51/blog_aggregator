@@ -9,69 +9,62 @@ import (
 	"github.com/mcbk51/blog_aggregator/internal/database"
 )
 
-func handlerFollowing(s *state, cmd command) error {
-	ctx := context.Background()
-
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't get user: %w", err)
-	}
-
-	follows, err := s.db.GetFeedFollowsForUser(ctx, user.ID)
-	if err != nil {
-		return fmt.Errorf("couldn't get followed feeds: %w", err)
-	}
-
-	if len(follows) == 0 {
-		fmt.Println("You are not following any feeds.")
-		return nil
-	}
-
-	fmt.Printf("You are following %d feeds:\n", len(follows))
-	for _, follow := range follows {
-		fmt.Printf("- %s (%s)\n", follow.FeedName, follow.FeedID)
-	}
-	fmt.Println("=====================================")
-
-	return nil
-}
-
 func handlerFollow(s *state, cmd command) error {
-	if len(cmd.Args) < 1 {
-		return fmt.Errorf("usage: %s <url>", cmd.Name)
-	}
-
-	url := cmd.Args[0]
-	ctx := context.Background()
-
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
-		return fmt.Errorf("couldn't get user: %w", err)
+		return err
 	}
 
-	feed, err := s.db.GetFeedByURL(ctx, url)
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("usage: %s <feed_url>", cmd.Name)
+	}
+
+	feed, err := s.db.GetFeedByURL(context.Background(), cmd.Args[0])
 	if err != nil {
 		return fmt.Errorf("couldn't get feed: %w", err)
 	}
 
-	now := time.Now().UTC()
-	follow, err := s.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+	ffRow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
-		CreatedAt: now,
-		UpdatedAt: now,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("couldn't follow feed: %w", err)
+		return fmt.Errorf("couldn't create feed follow: %w", err)
 	}
 
-	fmt.Println("Followed feed successfully:")
-	fmt.Printf("Feed: %s\n", follow.FeedName)
-	fmt.Printf("User: %s\n", follow.UserName)
-	fmt.Printf("Follow ID: %s\n", follow.ID)
-	fmt.Println("=====================================")
+	fmt.Println("Feed follow created:")
+	printFeedFollow(ffRow.UserName, ffRow.FeedName)
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return fmt.Errorf("couldn't get feed follows: %w", err)
+	}
+
+	if len(feedFollows) == 0 {
+		fmt.Println("No feed follows found for this user.")
+		return nil
+	}
+
+	fmt.Printf("Feed follows for user %s:\n", user.Name)
+	for _, ff := range feedFollows {
+		fmt.Printf("* %s\n", ff.FeedName)
+	}
 
 	return nil
 }
 
+func printFeedFollow(username, feedname string) {
+	fmt.Printf("* User:          %s\n", username)
+	fmt.Printf("* Feed:          %s\n", feedname)
+}
