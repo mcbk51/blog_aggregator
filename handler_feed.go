@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"time"
-	
-	"github.com/mcbk51/blog_aggregator/internal/database"
+
 	"github.com/google/uuid"
+	"github.com/mcbk51/blog_aggregator/internal/database"
 )
 
 func handlerAddFeed(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.background(), s.cfg.currentusername)
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return err
 	}
@@ -34,10 +34,10 @@ func handlerAddFeed(s *state, cmd command) error {
 		return fmt.Errorf("couldn't create feed: %w", err)
 	}
 
-	follow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
-		CreatedAt: now,
-		UpdatedAt: now,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
