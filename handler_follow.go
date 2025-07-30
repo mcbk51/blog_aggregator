@@ -46,6 +46,9 @@ func handlerFollow(s *state, cmd command) error {
 	fmt.Println("=====================================")
 
 	return nil
+}
 
-  
+
+func handlerFollowing(s *state, cmd command) error {
+  	
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func handlerAddFeed(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	user, err := s.db.GetUser(context.background(), s.cfg.currentusername)
 	if err != nil {
 		return err
 	}
