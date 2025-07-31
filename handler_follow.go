@@ -32,7 +32,7 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 
 	fmt.Println("Feed follow created:")
 	printFeedFollow(ffRow.UserName, ffRow.FeedName)
-	return nil
+	return nil 
 }
 
 
